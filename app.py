@@ -2,9 +2,6 @@ from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import ollama
-import json
-import random
-import numpy as np
 from utils.prompts import get_prompt_template, get_schema
 
 app = FastAPI()
