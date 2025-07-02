@@ -38,7 +38,7 @@ Follow these steps to get the application up and running:
 1.  **Clone the Repository**
 
     ```bash
-    git clone [https://github.com/safouaneelg/zeroshot-reasoning.git](https://github.com/safouaneelg/zeroshot-reasoning.git)
+    git clone https://github.com/safouaneelg/zeroshot-reasoning.git
     cd zeroshot-reasoning
     ```
 
