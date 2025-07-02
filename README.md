@@ -102,7 +102,7 @@ Follow these steps to get the application up and running:
 ## Project Structure
 
 ```plain
-OllamaReasoner/
+zeroshot-reasoning/
 ├── app.py              # FastAPI application
 └── utils/
 │   └── prompts.py      # Prompt templates and JSON schemas for reasoning strategies CoT, ToT, GoT
