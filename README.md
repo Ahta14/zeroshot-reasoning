@@ -10,7 +10,10 @@ This project offers a dynamic visualization of zero-shot reasoning strategies, p
 
 ## Key Features
 
-* **Dynamic Reasoning Strategies**: Seamlessly switch between **Chain-of-Thought (CoT)**, **Tree-of-Thought (ToT)**, and **Graph-of-Thought (GoT)** to observe varied AI reasoning patterns.
+* **Dynamic Reasoning Strategies**: This project tries to integrate the following zeroshot reasoning strategies:
+    - **Chain-of-Thought (CoT)** : from the paper [Large Language Models are Zero-Shot Reasoners](https://arxiv.org/abs/2205.11916)
+    - **Tree-of-Thought (ToT)** : from the paper [Graph of Thoughts: Solving Elaborate Problems with Large Language Models](https://arxiv.org/abs/2308.09687)
+    -  **Graph-of-Thought (GoT)** : from the paper [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601).
 * **Interactive Visualizations**: Gain insights into the AI's thought process with real-time, interactive reasoning network graphs powered by `vis.js`.
 * **Structured AI Outputs**: Leveraging **Ollama's structured output capabilities** (JSON schemas), responses are consistently formatted for clear analysis and visualization.
 * **Robust FastAPI Backend**: A high-performance API handles interactions with the Ollama model, ensuring efficient reasoning execution.
@@ -136,6 +139,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Acknowledgments
 
-Ollama for providing the LLM framework.
-FastAPI for the API framework.
-vis.js for network visualizations.
+- Ollama for providing the LLM framework.
+- FastAPI for the API framework.
+- vis.js for network visualizations.
