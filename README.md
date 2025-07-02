@@ -4,10 +4,7 @@ This project offers a dynamic visualization of zero-shot reasoning strategies, p
 
 ## Video Demo
 
-<video controls autoplay loop muted width="700">
-  <source src="examples/demonstrator.webm" type="video/webm">
-  Your browser does not support the video tag.
-</video>
+![Demonstration](examples/demonstrator2.gif)
 
 ---
 
