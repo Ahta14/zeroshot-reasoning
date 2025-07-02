@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Zero-shot reasoning strategies using Ollama Structured Output</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="static/index.css">
+</head>
+<body data-theme="dark">
+    <header>
+        <h1><i class="fas fa-project-diagram"></i> Dynamic Zero-shot reasoning strategies using Ollama Structured Output</h1>
+        <div class="theme-toggle">
+            <input type="checkbox" id="theme-switch">
+            <label for="theme-switch">
+                <div class="switch">
+                    <div class="slider">
+                        <svg class="icon sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <circle cx="256" cy="256" r="144.824" fill="#FFD347"/>
+                            <path fill="#FFD347" d="M256,56.849c-4.273,0-7.737-3.463-7.737-7.737V7.737C248.263,3.463,251.727,0,256,0s7.737,3.463,7.737,7.737v41.376C263.737,53.386,260.273,56.849,256,56.849z"/>
+                        </svg>
+                        <svg class="icon moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 499.712 499.712">
+                            <path fill="#FFD93B" d="M146.88,375.528c126.272,0,228.624-102.368,228.624-228.64c0-55.952-20.16-107.136-53.52-146.88C425.056,33.096,499.696,129.64,499.696,243.704c0,141.392-114.608,256-256,256c-114.064,0-210.608-74.64-243.696-177.712C39.744,355.368,90.944,375.528,146.88,375.528z"/>
+                        </svg>
+                    </div>
+                </div>
+            </label>
+        </div>
+    </header>
+    <div class="container">
+        <div class="chat-container">
+            <div id="chat-log"></div>
+            <div class="strategy-dropdown">
+                <label for="strategy-select">Choose a strategy:</label>
+                <select id="strategy-select">
+                    <option value="cot">Chain-of-Thought</option>
+                    <option value="got" selected>Graph-of-Thought</option>
+                    <option value="tot">Tree-of-Thought</option>
+                </select>
+            </div>
+            <form id="question-form">
+                <input type="text" id="question-input" placeholder="Ask a technical question...">
+                <button type="submit"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+        <div class="resizer"></div>
+        <div class="visualization-container">
+            <div class="explanatory-thinking">Reasoning network will appear here</div>
+            <div class="dynamic-graph"></div>
+        </div>
+    </div>
+    <div class="modal-overlay"></div>
+    <div class="modal">
+        <span class="modal-close">×</span>
+        <div class="modal-content"></div>
+    </div>
+    <script>
+        const themeSwitch = document.getElementById('theme-switch');
+        themeSwitch.addEventListener('change', () => {
+            document.body.setAttribute('data-theme', themeSwitch.checked ? 'light' : 'dark');
+            updateThemeColors();
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        const resizer = document.querySelector('.resizer');
+        const chatContainer = document.querySelector('.chat-container');
+        const visualizationContainer = document.querySelector('.visualization-container');
+        let isResizing = false;
+        resizer.addEventListener('mousedown', () => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const containerRect = document.querySelector('.container').getBoundingClientRect();
+            const totalWidth = containerRect.width;
+            const newChatWidth = e.clientX - containerRect.left;
+            const newVisWidth = totalWidth - newChatWidth - resizer.offsetWidth;
+            const minWidth = totalWidth * 0.2;
+            if (newChatWidth < minWidth || newVisWidth < minWidth) return;
+            chatContainer.style.flexBasis = `${newChatWidth}px`;
+            visualizationContainer.style.flexBasis = `${newVisWidth}px`;
+        });
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        const graphContainer = document.querySelector('.dynamic-graph');
+        const nodes = new vis.DataSet([]);
+        const edges = new vis.DataSet([]);
+        const data = { nodes, edges };
+        const options = {
+            nodes: {
+                shape: 'box',
+                margin: 10,
+                widthConstraint: { maximum: 200 },
+                font: { size: 14, color: '#ffffff' },
+                color: { border: '#007bff' },
+                shadow: true
+            },
+            edges: {
+                arrows: 'to',
+                font: { size: 12 },
+                color: { color: '#888', highlight: '#007bff', inherit: false },
+                smooth: { type: 'cubicBezier', forceDirection: 'vertical' },
+                width: 2
+            },
+            physics: { enabled: false },
+            layout: { hierarchical: { enabled: false } }
+        };
+        const network = new vis.Network(graphContainer, data, options);
+
+        function updateThemeColors() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            nodes.forEach(node => {
+                nodes.update({
+                    id: node.id,
+                    font: { color: isDark ? '#ffffff' : '#000000' },
+                    color: node.id === 'CORE' ? {
+                        background: '#ff0000',
+                        border: '#ffffff',
+                        highlight: { background: '#cc0000', border: '#ffffff' }
+                    } : {
+                        background: isDark ? '#343a40' : '#ffffff',
+                        border: '#007bff',
+                        highlight: { background: isDark ? '#495057' : '#e6e6e6', border: '#007bff' }
+                    }
+                });
+            });
+            edges.forEach(edge => {
+                edges.update({
+                    id: edge.id,
+                    font: { color: isDark ? '#ffffff' : '#000000' },
+                    color: { color: isDark ? '#888' : '#555', highlight: '#007bff' }
+                });
+            });
+        }
+
+        const modal = document.querySelector('.modal');
+        const modalOverlay = document.querySelector('.modal-overlay');
+        const modalContent = document.querySelector('.modal-content');
+        const modalClose = document.querySelector('.modal-close');
+        function showModal(content) {
+            modalContent.innerHTML = marked.parse(content);
+            modal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        }
+        function closeModal() {
+            modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            modalContent.innerHTML = '';
+        }
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
+        function processReasoningWeb(reasoningWeb, strategy) {
+            const newNodes = [];
+            const newEdges = [];
+            const seenEdges = new Set();
+
+            newNodes.push({
+                id: 'CORE',
+                label: reasoningWeb.core,
+                explanation: "Central concept (tree top)",
+                color: {
+                    background: '#ff0000',
+                    border: '#ffffff',
+                    highlight: { background: '#cc0000', border: '#ffffff' }
+                },
+                font: { color: document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#000000' }
+            });
+
+            reasoningWeb.nodes.forEach(node => {
+                const links = Array.isArray(node.links) ? node.links : [];
+                newNodes.push({
+                    id: node.id,
+                    label: node.idea,
+                    explanation: node.description || `Children: ${links.join(', ')}`,
+                    color: {
+                        background: document.body.getAttribute('data-theme') === 'dark' ? '#343a40' : '#ffffff',
+                        border: '#007bff',
+                        highlight: {
+                            background: document.body.getAttribute('data-theme') === 'dark' ? '#495057' : '#e6e6e6',
+                            border: '#007bff'
+                        }
+                    },
+                    font: { color: document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#000000' }
+                });
+                links.forEach(targetId => {
+                    const edgeId = `${node.id}-${targetId}`;
+                    if (!seenEdges.has(edgeId)) {
+                        newEdges.push({ id: edgeId, from: node.id, to: targetId, label: '' });
+                        seenEdges.add(edgeId);
+                    }
+                });
+            });
+
+            reasoningWeb.paths.forEach((path, index) => {
+                const pathNodes = path.route.split('→');
+                for (let i = 0; i < pathNodes.length - 1; i++) {
+                    const from = pathNodes[i];
+                    const to = pathNodes[i + 1];
+                    const edgeId = `${from}-${to}-path${index}`;
+                    if (!seenEdges.has(edgeId)) {
+                        newEdges.push({
+                            id: edgeId,
+                            from,
+                            to,
+                            color: { color: '#4CAF50', highlight: '#2E7D32' },
+                            label: `Path ${index + 1}`,
+                            dashes: index === 0 ? false : [5, 5],
+                            width: 3
+                        });
+                        seenEdges.add(edgeId);
+                    }
+                }
+            });
+
+            if (strategy === 'tot') {
+                options.layout.hierarchical = {
+                    enabled: true,
+                    direction: 'UD',
+                    sortMethod: 'directed',
+                    levelSeparation: 150,
+                    nodeSpacing: 200,
+                    treeSpacing: 300,
+                    shakeTowards: 'leaves'
+                };
+                options.physics.enabled = false;
+            } else if (strategy === 'cot') {
+                options.layout.hierarchical = {
+                    enabled: true,
+                    direction: 'LR',
+                    sortMethod: 'directed'
+                };
+            } else {
+                options.layout.hierarchical = { enabled: false };
+                options.physics.enabled = true;
+            }
+            network.setOptions(options);
+            return { nodes: newNodes, edges: newEdges };
+        }
+
+        network.on('click', params => {
+            if (params.nodes.length > 0) {
+                const node = nodes.get(params.nodes[0]);
+                if (node?.explanation) {
+                    showModal(`**${node.label}**\n\n${node.explanation}`);
+                }
+            }
+        });
+
+        network.on('doubleClick', params => {
+            if (params.nodes.length) {
+                const nodeId = params.nodes[0];
+                const connectedEdges = network.getConnectedEdges(nodeId);
+                edges.update(connectedEdges.map(edgeId => ({
+                    id: edgeId,
+                    color: { color: '#FF5722', highlight: '#FF5722' },
+                    width: 4
+                })));
+                setTimeout(() => {
+                    edges.update(connectedEdges.map(edgeId => {
+                        const edge = edges.get(edgeId);
+                        const isPathEdge = edge.label?.startsWith('Path');
+                        return {
+                            id: edgeId,
+                            color: { color: isPathEdge ? '#4CAF50' : '#888', highlight: isPathEdge ? '#2E7D32' : '#007bff' },
+                            width: isPathEdge ? 3 : 2
+                        };
+                    }));
+                }, 2000);
+            }
+        });
+
+        async function askQuestion() {
+            const question = document.getElementById('question-input').value.trim();
+            const strategy = document.getElementById('strategy-select').value;
+            if (!question) return;
+            const chatLog = document.getElementById('chat-log');
+            const explanatoryDiv = document.querySelector('.explanatory-thinking');
+
+            nodes.clear();
+            edges.clear();
+            closeModal();
+
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user';
+            userMessageDiv.innerHTML = `
+                <div class="content">${escapeHtml(question)}</div>
+                <div class="avatar"><i class="fas fa-user"></i></div>
+            `;
+            chatLog.appendChild(userMessageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            document.getElementById('question-input').value = '';
+
+            const aiMessageDiv = document.createElement('div');
+            aiMessageDiv.className = 'message ai';
+            aiMessageDiv.innerHTML = `
+                <div class="avatar"><i class="fas fa-robot"></i></div>
+                <div class="content"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>
+            `;
+            chatLog.appendChild(aiMessageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            explanatoryDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Building reasoning network...';
+
+            try {
+                const response = await fetch('http://localhost:8001/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, strategy })
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let reasoningWeb = { core: '', nodes: [], paths: [], final_answer: {} };
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        try {
+                            const chunkData = JSON.parse(line);
+                            if (chunkData.type === 'core') {
+                                reasoningWeb.core = chunkData.data;
+                                explanatoryDiv.innerHTML = `<strong>Core Concept:</strong> ${escapeHtml(chunkData.data)}`;
+                                nodes.update([{
+                                    id: 'CORE',
+                                    label: chunkData.data,
+                                    explanation: "Central concept (tree top)",
+                                    color: {
+                                        background: '#ff0000',
+                                        border: '#ffffff',
+                                        highlight: { background: '#cc0000', border: '#ffffff' }
+                                    },
+                                    font: { color: document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#000000' }
+                                }]);
+                                network.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+                            } else if (chunkData.type === 'node') {
+                                reasoningWeb.nodes.push(chunkData.data);
+                                const nodesList = reasoningWeb.nodes.map(node =>
+                                    `"${node.id}", "${node.idea}", links: [${(node.links || []).map(link => `"${link}"`).join(', ')}]`
+                                ).join('<br>');
+                                explanatoryDiv.innerHTML = `
+                                    <strong>Core Concept:</strong> ${escapeHtml(reasoningWeb.core || 'Unknown')}<br><br>
+                                    <strong>Nodes:</strong><br>${nodesList}
+                                `;
+                                const { nodes: newNodes, edges: newEdges } = processReasoningWeb(reasoningWeb, strategy);
+                                nodes.update(newNodes);
+                                edges.update(newEdges);
+                                nodes.update([{
+                                    id: chunkData.data.id,
+                                    color: {
+                                        background: '#4CAF50',
+                                        border: '#ffffff',
+                                        highlight: { background: '#2E7D32', border: '#ffffff' }
+                                    },
+                                    font: { color: document.body.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#000000' }
+                                }]);
+                                setTimeout(() => {
+                                    const isDark = document.body.getAttribute('data-theme') === 'dark';
+                                    nodes.update([{
+                                        id: chunkData.data.id,
+                                        color: {
+                                            background: isDark ? '#343a40' : '#ffffff',
+                                            border: '#007bff',
+                                            highlight: { background: isDark ? '#495057' : '#e6e6e6', border: '#007bff' }
+                                        },
+                                        font: { color: isDark ? '#ffffff' : '#000000' }
+                                    }]);
+                                }, 1000);
+                                network.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+                            } else if (chunkData.type === 'path') {
+                                reasoningWeb.paths.push(chunkData.data);
+                                let pathsHtml = `<br><br><strong>Paths:</strong><br>`;
+                                reasoningWeb.paths.forEach((path, index) => {
+                                    pathsHtml += `Path ${index + 1}: ${escapeHtml(path.route)}<br>`;
+                                });
+                                explanatoryDiv.innerHTML += pathsHtml;
+                                const { edges: newEdges } = processReasoningWeb(reasoningWeb, strategy);
+                                edges.update(newEdges);
+                                network.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+                            } else if (chunkData.type === 'final_answer') {
+                                reasoningWeb.final_answer = chunkData.data;
+                                const finalAnswer = chunkData.data;
+                                const finalResponse = finalAnswer.final_response.trim() === 'Best approach'
+                                    ? 'Specific solution (please refine LLM prompt)'
+                                    : finalAnswer.final_response;
+                                aiMessageDiv.querySelector('.content').innerHTML = `
+                                    <div class="final-answer">${escapeHtml(finalResponse)}</div>
+                                    <div class="dropdown">
+                                        <button class="dropdown-btn">Show Analysis</button>
+                                        <div class="dropdown-content">
+                                            <p>${escapeHtml(finalAnswer.analysis)}</p>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="dropdown-btn">Show Recommendation</button>
+                                        <div class="dropdown-content">
+                                            <p>${escapeHtml(finalAnswer.recommendation)}</p>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="dropdown-btn">Show Rationale</button>
+                                        <div class="dropdown-content">
+                                            <p>${escapeHtml(finalAnswer.rationale)}</p>
+                                        </div>
+                                    </div>
+                                    ${finalAnswer.code_snippet ? `
+                                        <div class="dropdown">
+                                            <button class="dropdown-btn">Show Code Snippet</button>
+                                            <div class="dropdown-content">
+                                                <pre><code>${escapeHtml(finalAnswer.code_snippet)}</code></pre>
+                                            </div>
+                                        </div>
+                                    ` : finalAnswer.code_snippet === "" ? `
+                                        <div class="error">Note: Code snippet was malformed and could not be displayed</div>
+                                    ` : ''}
+                                `;
+                                aiMessageDiv.querySelectorAll('.dropdown-btn').forEach(btn => {
+                                    btn.addEventListener('click', () => {
+                                        const dropdownContent = btn.nextElementSibling;
+                                        const isVisible = dropdownContent.classList.contains('show');
+                                        dropdownContent.classList.toggle('show', !isVisible);
+                                        btn.textContent = isVisible ? btn.textContent.replace('Hide', 'Show') : btn.textContent.replace('Show', 'Hide');
+                                        btn.classList.toggle('active', !isVisible);
+                                    });
+                                });
+                                explanatoryDiv.innerHTML += `<br><br><strong>Chosen Path:</strong> ${escapeHtml(finalAnswer.chosen_path)}`;
+                                const pathNodes = finalAnswer.chosen_path.split('→');
+                                for (let i = 0; i < pathNodes.length - 1; i++) {
+                                    const from = pathNodes[i];
+                                    const to = pathNodes[i + 1];
+                                    edges.update({
+                                        id: `${from}-${to}`,
+                                        color: { color: '#FFD700', highlight: '#FFD700' },
+                                        width: 4,
+                                        dashes: false
+                                    });
+                                }
+                                network.fit({ animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse line:', line, e.message);
+                        }
+                    }
+                    chatLog.scrollTop = chatLog.scrollHeight;
+                }
+                if (buffer.trim()) {
+                    try {
+                        const chunkData = JSON.parse(buffer);
+                        if (chunkData.type === 'final_answer') {
+                            reasoningWeb.final_answer = chunkData.data;
+                            const finalAnswer = chunkData.data;
+                            const finalResponse = finalAnswer.final_response.trim() === 'Best approach'
+                                ? 'Specific solution (please refine LLM prompt)'
+                                : finalAnswer.final_response;
+                            aiMessageDiv.querySelector('.content').innerHTML = `
+                                <div class="final-answer">${escapeHtml(finalResponse)}</div>
+                                <div class="dropdown">
+                                    <button class="dropdown-btn">Show Analysis</button>
+                                    <div class="dropdown-content">
+                                        <p>${escapeHtml(finalAnswer.analysis)}</p>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="dropdown-btn">Show Recommendation</button>
+                                    <div class="dropdown-content">
+                                        <p>${escapeHtml(finalAnswer.recommendation)}</p>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="dropdown-btn">Show Rationale</button>
+                                    <div class="dropdown-content">
+                                        <p>${escapeHtml(finalAnswer.rationale)}</p>
+                                    </div>
+                                </div>
+                                ${finalAnswer.code_snippet ? `
+                                    <div class="dropdown">
+                                        <button class="dropdown-btn">Show Code Snippet</button>
+                                    <div class="dropdown-content">
+                                        <pre><code>${escapeHtml(finalAnswer.code_snippet)}</code></pre>
+                                    </div>
+                                </div>
+                                ` : finalAnswer.code_snippet === "" ? `
+                                    <div class="error">Note: Code snippet was malformed and could not be displayed</div>
+                                ` : ''}
+                            `;
+                            aiMessageDiv.querySelectorAll('.dropdown-btn').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const dropdownContent = btn.nextElementSibling;
+                                    const isVisible = dropdownContent.classList.contains('show');
+                                    dropdownContent.classList.toggle('show', !isVisible);
+                                    btn.textContent = isVisible ? btn.textContent.replace('Hide', 'Show') : btn.textContent.replace('Show', 'Hide');
+                                    btn.classList.toggle('active', !isVisible);
+                                });
+                            });
+                            explanatoryDiv.innerHTML += `<br><br><strong>Chosen Path:</strong> ${escapeHtml(finalAnswer.chosen_path)}`;
+                            const pathNodes = finalAnswer.chosen_path.split('→');
+                            for (let i = 0; i < pathNodes.length - 1; i++) {
+                                const from = pathNodes[i];
+                                const to = pathNodes[i + 1];
+                                edges.update({
+                                    id: `${from}-${to}`,
+                                    color: { color: '#FFD700', highlight: '#FFD700' },
+                                    width: 4,
+                                    dashes: false
+                                });
+                            }
+                            network.fit({ animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse remaining buffer:', buffer, e.message);
+                    }
+                }
+                network.stabilize(500);
+                if (!reasoningWeb.core && !reasoningWeb.nodes.length && !reasoningWeb.paths.length && !reasoningWeb.final_answer.final_response) {
+                    aiMessageDiv.querySelector('.content').innerHTML = `<p class="error">Error: Failed to parse response data</p>`;
+                    explanatoryDiv.textContent = 'Failed to generate reasoning network';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                aiMessageDiv.querySelector('.content').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                explanatoryDiv.textContent = 'Failed to generate reasoning network';
+            }
+        }
+
+        document.getElementById('question-form').addEventListener('submit', e => {
+            e.preventDefault();
+            askQuestion();
+        });
+
+        updateThemeColors();
+    </script>
+</body>
+</html>
