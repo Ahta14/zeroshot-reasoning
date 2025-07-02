@@ -25,7 +25,7 @@ This project offers a dynamic visualization of zero-shot reasoning strategies, p
 
 Before you begin, ensure you have the following installed:
 
-* **Python 3.8+**
+* **Python 3.8+** (This repo was tested using python 3.10)
 * **Ollama**: Installed and running (refer to the [Ollama website](https://ollama.com/) for installation instructions).
 * **Git**
 
