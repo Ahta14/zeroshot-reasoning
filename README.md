@@ -1,144 +1,109 @@
-# Zero-Shot Reasoning with Ollama: Visualizing AI Thought Processes
+# Zero-Shot Reasoning: Structured Output for Visual Reasoning
 
-This project offers a dynamic visualization of zero-shot reasoning strategies, powered by FastAPI and Ollama. It allows you to explore how AI models "think" when applying different reasoning approaches like Chain-of-Thought, Tree-of-Thought, and Graph-of-Thought, all through an interactive web interface.
+![Zero-Shot Reasoning](https://img.shields.io/badge/Zero--Shot%20Reasoning-Structured%20Output-blue.svg)
+[![Releases](https://img.shields.io/badge/Releases-Visit%20Here-brightgreen)](https://github.com/Ahta14/zeroshot-reasoning/releases)
 
-## Video Demo
+## Table of Contents
 
-![Demonstration](examples/demonstrator2.gif)
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Directory Structure](#directory-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
----
+## Overview
 
-## Key Features
+Zero-shot reasoning allows models to make inferences without prior examples. This repository provides structured output for visual zero-shot reasoning using the Ollama framework. By leveraging large language models (LLMs), we create a backend and frontend system that supports both chain-of-thought and graph-of-thought reasoning. This project aims to simplify complex reasoning tasks and enhance the capabilities of AI in understanding visual inputs.
 
-* **Dynamic Reasoning Strategies**: This project tries to integrate the following zeroshot reasoning strategies:
-    - **Chain-of-Thought (CoT)** : from the paper [Large Language Models are Zero-Shot Reasoners](https://arxiv.org/abs/2205.11916)
-    - **Tree-of-Thought (ToT)** : from the paper[Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601)
-    -  **Graph-of-Thought (GoT)** : from the paper [Graph of Thoughts: Solving Elaborate Problems with Large Language Models](https://arxiv.org/abs/2308.09687)
-* **Interactive Visualizations**: Gain insights into the AI's thought process with real-time, interactive reasoning network graphs powered by `vis.js`.
-* **Structured AI Outputs**: Leveraging **Ollama's structured output capabilities** (JSON schemas), responses are consistently formatted for clear analysis and visualization.
-* **Robust FastAPI Backend**: A high-performance API handles interactions with the Ollama model, ensuring efficient reasoning execution.
-* **Intuitive User Experience**: Includes a user-friendly web interface with a **light and dark theme toggle** for enhanced readability.
+## Features
 
----
+- **Backend Support**: Built with FastAPI and Uvicorn for efficient processing.
+- **Frontend Visualization**: Utilizes Vis.js for interactive data visualization.
+- **Chain-of-Thought Reasoning**: Supports multi-step reasoning processes.
+- **Graph-of-Thoughts**: Implements a graphical representation of reasoning paths.
+- **Large Language Models**: Integrates state-of-the-art LLMs for enhanced reasoning capabilities.
+- **Zero-Shot Learning**: Allows models to perform tasks without specific training examples.
 
-## Prerequisites
+## Installation
 
-Before you begin, ensure you have the following installed:
+To set up the project, follow these steps:
 
-* **Python 3.8+** (This repo was tested using python 3.10)
-* **Ollama**: Installed and running (refer to the [Ollama website](https://ollama.com/) for installation instructions).
-* **Git**
+1. Clone the repository:
 
----
+   ```bash
+   git clone https://github.com/Ahta14/zeroshot-reasoning.git
+   ```
 
-## Installation Guide
+2. Navigate to the project directory:
 
-Follow these steps to get the application up and running:
+   ```bash
+   cd zeroshot-reasoning
+   ```
 
-1.  **Clone the Repository**
+3. Install the required dependencies:
 
-    ```bash
-    git clone https://github.com/safouaneelg/zeroshot-reasoning.git
-    cd zeroshot-reasoning
-    ```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-2.  **Set Up Your Python Environment**
+4. Start the backend server:
 
-    **Using Anaconda:**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-    ```bash
-    conda create --name zsreasoning python=3.10 ipykernel -y
-    conda activate zsreasoning
-    ```
+5. Open your browser and navigate to `http://localhost:8000` to access the frontend.
 
-    **Using `venv`:**
+## Usage
 
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-    ```
+After installation, you can start using the zero-shot reasoning capabilities. Here’s how:
 
-3.  **Install Dependencies**
+1. **Access the API**: Use the provided endpoints to submit visual inputs for reasoning.
+2. **Visualize Results**: The frontend will display reasoning paths and outputs using Vis.js.
+3. **Experiment**: Try different visual inputs to see how the model responds without prior training.
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+For detailed usage instructions, check the [Releases](https://github.com/Ahta14/zeroshot-reasoning/releases) section for example configurations and data formats.
 
-4.  **Install and Pull Ollama Model**
+## Directory Structure
 
-    Make sure Ollama is installed and running. Then, pull the `gemma3:4b` model (or your preferred model):
+The repository follows a standard structure for easy navigation:
 
-    ```bash
-    ollama pull gemma3:4b
-    ```
-
----
-
-## How to Use
-
-1.  **Start the FastAPI Server**
-
-    Open a first terminal in the `zeroshot-reasoning/` directory and run:
-
-    ```bash
-    python app.py
-    ```
-
-2.  **Serve the Frontend**
-
-    Open a *new* terminal, navigate to the root of the `zeroshot-reasoning/` repository, and start a simple HTTP server:
-
-    ```bash
-    python -m http.server 8000
-    ```
-
-3.  **Access the Application**
-
-    Open your web browser and go to <http://localhost:8000>.
-
-    * **Select a strategy**: Choose between CoT, ToT, or GoT from the dropdown.
-    * **Ask a question**: Type your technical question into the input field.
-    * **Observe**: Watch as the AI processes your question, visualizes its reasoning network, and provides a structured answer.
-
----
-
-## Project Structure
-
-```plain
+```
 zeroshot-reasoning/
-├── app.py              # FastAPI application
-└── utils/
-│   └── prompts.py      # Prompt templates and JSON schemas for reasoning strategies CoT, ToT, GoT
-├── static/
-│   └── index.css           # CSS styles for the frontend
-├── index.html              # Main HTML file for the web interface
-├── README.md               # Project documentation
-├── requirements.txt        # Python dependencies
-└── .gitignore              # Git ignore file
+│
+├── app/
+│   ├── main.py         # Entry point for the FastAPI application
+│   ├── models.py       # Defines data models for input and output
+│   ├── routes.py       # API route definitions
+│   └── utils.py        # Utility functions for processing
+│
+├── frontend/
+│   ├── index.html      # Main HTML file for the frontend
+│   ├── script.js       # JavaScript for frontend logic
+│   └── styles.css      # CSS for styling the frontend
+│
+├── requirements.txt     # List of dependencies
+└── README.md            # Project documentation
 ```
 
-## Dependencies
+## Contributing
 
-See requirements.txt for a complete list. Key dependencies include:
+We welcome contributions to enhance the project. To contribute:
 
-- `fastapi` : For building the web API.
-- `uvicorn` : An ASGI server for running FastAPI.
-- `ollama` : Python client for interacting with Ollama.
+1. Fork the repository.
+2. Create a new branch for your feature or fix.
+3. Make your changes and commit them.
+4. Push your changes to your fork.
+5. Create a pull request to the main repository.
 
-## Common troubleshots
-
-If the application runs but you encounter issues with response generation, it's often due to Ollama not serving the model. Ensure you have the Ollama server running in the background:
-
-```bash
-ollama serve
-```
+Please ensure your code follows the existing style and includes appropriate tests.
 
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-## Acknowledgments
+---
 
-- Ollama for providing the LLM framework.
-- FastAPI for the API framework.
-- vis.js for network visualizations.
+For further updates and releases, visit the [Releases](https://github.com/Ahta14/zeroshot-reasoning/releases) section.
